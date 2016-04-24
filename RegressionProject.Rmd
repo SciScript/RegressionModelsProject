@@ -1,0 +1,62 @@
+---
+title: "Comparison of Automatic and Manual Transmission regarding their MPGs"
+output: html_document
+---
+
+# 1. Summary
+In this report, cars with automatic and manual transmission are compared regarding the achieved miles per gallon (MPG) based on the mtcars dataset. The aim of this study was to determine the difference between the two transmission types qualitatively and quantitatlively.
+
+In conclusion, our analysis revealed that manual transmissions are statistically significantly better than automatic transmissions. The simple linear regression revealed a relatively large difference between the average MPG values of cars with automatic and manual transmission (latter were 7.25 larger than MPG obtained with automatic transmission (17.15)). However, the multivariate regression revealed three major confounders (cyl6, cyl8, wt). Therefore, the multivariate regression resulted in a smaller difference between the two transmission types (manual was only 1.81 larger than automatic (33.71)), but explained 86.59% of the variability in comparison to only 35.98% of the linear regression.  
+
+# 2. Analysis
+## Exploratory Data Analysis
+```{r}
+library(datasets)
+data(mtcars)
+
+# Convert the important variables into factor variables
+mtcars$am <- factor(mtcars$am, labels = c("Automatic","Manual"))
+mtcars$cyl <- factor(mtcars$cyl)
+mtcars$vs <- factor(mtcars$vs)
+mtcars$gear <- factor(mtcars$gear)
+
+head(mtcars)
+```
+
+```{r}
+boxplot(mpg~am, data = mtcars,
+        col = c("dark grey", "light grey"),
+        xlab = "Transmission",
+        ylab = "Miles per Gallon",
+        main = "MPG vs Type of Transmission")
+```
+
+The above boxplot shows that cars with manual transmissions achieve a better average MPG value than cars with automatic transmissions.
+
+```{r}
+autoData <- mtcars[mtcars$am == "Automatic",]
+manualData <- mtcars[mtcars$am == "Manual",]
+t.test(autoData$mpg, manualData$mpg)
+```
+The performed Welch Two-Sample t-test revealed a p-value of 0.0014. As this is smaller than the significance level of 0.05, we can reject the null-hypothesis of identical MPG values and conclude, that cars with automatic transmission achieve statistically significant different average MPG values.
+
+## Regression Analysis
+### Linear Regression
+```{r}
+model1 <- lm(mpg ~ am, data = mtcars)
+summary(model1)
+```
+This linear regression indicates that cars with manual transmissions achieve MPG values that are, on average, 7.25 above those of cars with automatic transmissions (17.15). However, this model explains only 35.98% of the variance, indicating that further analysis is required.
+
+### Multivariate Regression
+```{r}
+model2 <- lm(mpg ~ cyl + hp + wt + am, data = mtcars)
+summary(model2)
+```
+This model shows that cars with manual transmission achieve MPG values that are, on average, 1.81 larger than those of cars with automatic transmissions (33.71). This model explains 86.59% of the variability and is thus better than the simple linear regression. Furthermore, the multivariate regression showed that especially the variables cyl6, cyl8, and wt acted as confounders. 
+
+```{r}
+par(mfrow = c(2, 2))
+plot(model2)
+```
+
